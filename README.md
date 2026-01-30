@@ -38,7 +38,7 @@ In addition, a **fatigue mathematical generation model** is incorporated to char
 ## 🧠 Framework Overview
 
 <p align="center">
-  <img src="assets/framework.png" width="800">
+  <img src="1.png" width="800">
 </p>
 
 *Figure: Overall framework of the proposed Dynamic Swin-CRM–based contrastive self-supervised fatigue detection method.*
