@@ -1,0 +1,45 @@
+# Fatigue classification environment
+# Recommended Python: 3.10
+# GPU target: NVIDIA CUDA 12.8
+#
+# Install:
+#   python -m pip install --upgrade pip setuptools wheel
+#   pip install -r requirements.txt
+#
+# If PyTorch installation from this file is problematic on your server,
+# install the PyTorch stack first with:
+#   pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+# then install the remaining packages from this file.
+#
+# PyTorch / CUDA
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.7.1
+torchvision==0.22.1
+torchaudio==2.7.1
+
+# Model backbones
+timm==1.0.21
+
+# Numerical / scientific computing
+numpy==1.26.4
+scipy
+scikit-learn
+pandas
+
+# Image processing
+Pillow
+opencv-python
+
+# Visualization / explainability
+matplotlib
+grad-cam
+
+# Training utilities
+tqdm
+tensorboard
+einops
+
+# Configuration / logging
+PyYAML
+yacs
+termcolor
