@@ -5,9 +5,8 @@
 This repository provides code examples and reference implementations related to the paper:
 
 > **A Dynamic Swin-CRM-Based Contrastive Self-Supervised Framework for Train Driver Fatigue Detection**  
-> *IEEE Internet of Things Journal (under review)*
 
-The current release provides an example implementation based on **Swin-MAE with DWMM**, demonstrating masked image reconstruction and deformable window modeling for train driver fatigue representation learning.
+The current release provides representative implementations for train driver fatigue recognition, including an example based on **Swin-MAE with DWMM** for self-supervised visual representation learning.
 
 ---
 
@@ -17,9 +16,11 @@ Train driver fatigue is an important safety concern in railway transportation, p
 
 Existing vision-based fatigue detection methods often rely heavily on manually annotated data and may have limited capability in learning robust representations across different drivers and operating conditions.
 
-To address these challenges, this study investigates a **contrastive self-supervised learning framework** for train driver fatigue detection. The framework combines hierarchical visual representation learning, deformable window modeling, masked image reconstruction, and contrastive representation learning to improve the extraction of fatigue-related visual features.
+To address these challenges, this study investigates a **contrastive self-supervised learning framework** for train driver fatigue detection. The framework combines hierarchical visual representation learning, deformable window modeling, masked image reconstruction, and contrastive representation learning.
 
-As an implementation example, this repository provides **Swin-MAE with DWMM**, illustrating how deformable window modeling can be integrated with masked image reconstruction for self-supervised visual representation learning.
+As a representative implementation example, this repository provides **Swin-MAE with DWMM**, illustrating how deformable window modeling can be integrated with masked image reconstruction for self-supervised fatigue-related visual representation learning.
+
+Several commonly used visual backbones are also included for comparative experiments.
 
 ---
 
@@ -41,7 +42,7 @@ The overall framework mainly involves three learning components:
 
 These components are designed to improve adaptive local feature modeling, contextual representation learning, and discriminative feature representation.
 
-The implementation example released in this repository focuses on the **Swin-MAE + DWMM** component.
+The implementation example highlighted in this repository focuses on **Swin-MAE + DWMM**.
 
 ---
 
@@ -49,9 +50,9 @@ The implementation example released in this repository focuses on the **Swin-MAE
 
 The **Deformable Window Modeling Module (DWMM)** is introduced into window-based self-attention to enhance adaptive local feature representation.
 
-Conventional window attention performs feature interaction within fixed spatial windows. In contrast, DWMM introduces learnable spatial offsets that allow the sampling positions within each local window to be dynamically adjusted according to the input features.
+Conventional window attention performs feature interaction at fixed spatial sampling locations. In contrast, DWMM introduces learnable spatial offsets that allow feature sampling positions within each local window to be dynamically adjusted according to the input features.
 
-The module incorporates several mechanisms, including:
+The main mechanisms include:
 
 - Learnable spatial offsets
 - Bilinear feature resampling
@@ -74,7 +75,7 @@ The resulting latent representations are subsequently passed through a lightweig
 
 The reconstruction objective is calculated over the masked regions, encouraging the model to infer missing visual information from the surrounding context.
 
-Through this process, the encoder learns meaningful representations of local facial structures, contextual information, and subtle appearance variations that can be transferred to downstream fatigue recognition tasks.
+Through this process, the encoder learns meaningful representations of local facial structures, contextual information, and subtle appearance variations that can subsequently be transferred to downstream fatigue recognition tasks.
 
 ---
 
@@ -82,7 +83,7 @@ Through this process, the encoder learns meaningful representations of local fac
 
 Contrastive self-supervised learning is incorporated into the overall framework to improve the consistency and discriminative capability of the learned representations.
 
-Different augmented views of the same sample are mapped into a shared feature space, where representations corresponding to the same sample are encouraged to maintain semantic consistency while preserving discrimination between different samples.
+Different augmented views of the same sample are mapped into a shared representation space. Representations corresponding to the same sample are encouraged to maintain semantic consistency, while features from different samples provide discriminative information.
 
 The contrastive learning process mainly involves:
 
@@ -92,7 +93,7 @@ The contrastive learning process mainly involves:
 - Positive and negative similarity computation
 - Contrastive loss optimization
 
-By combining reconstruction-oriented representation learning with contrastive learning, the overall framework can make more effective use of unlabeled facial images and reduce dependence on manually annotated fatigue data.
+Together with reconstruction-oriented representation learning and DWMM-based feature modeling, contrastive learning contributes to more robust fatigue-related visual representations and reduces dependence on manually annotated data.
 
 ---
 
@@ -143,11 +144,13 @@ The main evaluation metrics include:
 - Balanced Accuracy
 - ROC-AUC
 
+Grad-CAM++ can additionally be used to visualize the spatial regions contributing to the classification decisions.
+
 ---
 
 ## 🚀 Getting Started
 
-### Create the Environment
+### 1. Create the Environment
 
 Python 3.10 is recommended.
 
@@ -162,7 +165,9 @@ Upgrade the basic Python packaging tools:
 python -m pip install --upgrade pip setuptools wheel
 ```
 
-### Install PyTorch
+---
+
+### 2. Install PyTorch
 
 For an NVIDIA GPU environment using CUDA 12.8:
 
@@ -174,7 +179,9 @@ torchaudio==2.7.1 \
 --index-url https://download.pytorch.org/whl/cu128
 ```
 
-### Install Dependencies
+---
+
+### 3. Install Dependencies
 
 Install the remaining dependencies using:
 
@@ -195,42 +202,93 @@ OpenCV
 Pillow
 Matplotlib
 Grad-CAM
+PyYAML
+yacs
+einops
 ```
 
 ---
 
 ## 📂 Project Structure
 
-A typical project structure is:
+The repository contains the proposed implementation examples together with several comparison backbones and experimental utilities.
 
 ```text
 Dynamic-Swin-CRM/
 |
 |-- configs/
+|   |-- coatnet/
+|   |-- convnext/
+|   |-- deit/
+|   |-- dinov2/
+|   |-- edgenext/
+|   |-- mixmae/
+|   |-- mobilevitv2/
+|   |-- resnet50/
+|   |-- resnet50_mimcl/
+|   |-- swin_base__100ep/
+|   |-- swin_base__800ep/
+|   |-- swin_cmae/
+|   |-- swin_large__800ep/
+|   |-- swin_mae_dwmm/
+|   |-- vit_base__800ep/
+|   `-- ...
 |
 |-- data/
+|   `-- data loading and dataset utilities
 |
 |-- models/
+|   |-- swin_transformer.py
+|   |-- swin_mae_model.py
 |   |-- swin_mae_dwmm_model.py
+|   |-- simmim.py
+|   |-- convnext_model.py
+|   |-- deit_model.py
+|   |-- deit3_model.py
+|   |-- dinov2_model.py
+|   |-- edgenext_model.py
+|   |-- coatnet_model.py
+|   |-- mobilevitv2_model.py
+|   |-- resnet_model.py
+|   |-- resnet50_mimcl_model.py
+|   |-- swin_cmae_model.py
+|   |-- vision_transformer.py
+|   `-- ...
 |
-|-- output/
+|-- config.py
+|-- logger.py
+|-- lr_scheduler.py
+|
+|-- main_simmim.py
+|-- main_simmim_pretrain_reconstruction.py
+|
+|-- swin_mae_dwmm_train_gradcam_speed_single_gpu_loso_fixed_recon_v5.py
+|
+|-- comparison and fine-tuning scripts
 |
 |-- requirements.txt
-|
-|-- README.md
+`-- README.md
 ```
 
-The example model implementation is located in:
+The main example implementation described in this README is:
 
 ```text
 models/swin_mae_dwmm_model.py
 ```
 
+Its corresponding configuration files are located under:
+
+```text
+configs/swin_mae_dwmm/
+```
+
+Other model files and training scripts are retained for backbone comparison, ablation experiments, and evaluation.
+
 ---
 
 ## 🏋️ Example Implementation
 
-As an implementation example, this repository provides **Swin-MAE with DWMM** for self-supervised train driver fatigue representation learning.
+As a representative implementation example, this repository provides **Swin-MAE with DWMM** for self-supervised train driver fatigue representation learning.
 
 The example combines:
 
@@ -242,9 +300,15 @@ Swin Transformer
 Masked Image Reconstruction
 ```
 
+The main model is implemented in:
+
+```text
+models/swin_mae_dwmm_model.py
+```
+
 During self-supervised pretraining, partially masked facial images are processed by the DWMM-enhanced Swin Transformer encoder to obtain latent feature representations.
 
-A lightweight decoder is then used to reconstruct the masked image patches from the encoded features.
+A lightweight decoder is subsequently used to reconstruct the masked image patches from the encoded features.
 
 This example demonstrates how deformable window modeling can be integrated with masked image reconstruction to learn contextual and fine-grained visual representations from unlabeled facial images.
 
@@ -278,6 +342,8 @@ Reconstruction Decoder
 Masked Patch Prediction
 ```
 
+A representative training script is provided in the project for the Swin-MAE + DWMM experiment.
+
 The pretrained encoder obtained from this example can subsequently be transferred to downstream visual recognition tasks.
 
 ---
@@ -289,8 +355,8 @@ As an example downstream application, the pretrained **Swin-MAE + DWMM** encoder
 The classification task is defined as:
 
 ```text
-fatigue
-nofatigue
+0 = fatigue
+1 = nofatigue
 ```
 
 The pretrained encoder is combined with a classification head and fine-tuned using labeled fatigue data.
@@ -302,7 +368,7 @@ Training:    N - 1 subjects
 Evaluation:  1 unseen subject
 ```
 
-This example illustrates how self-supervised visual representations can be transferred to cross-subject train driver fatigue recognition.
+This example illustrates the transfer of self-supervised representations to cross-subject train driver fatigue recognition.
 
 ---
 
@@ -326,20 +392,61 @@ The reconstruction results provide an intuitive view of the contextual and struc
 
 ---
 
+## 🔍 Comparison Backbones
+
+Several commonly used visual architectures are included for comparative experiments.
+
+Representative backbones available in the repository include:
+
+- Swin Transformer
+- Vision Transformer
+- DeiT
+- DeiT III
+- ConvNeXt
+- DINOv2
+- EdgeNeXt
+- CoAtNet
+- MobileViTv2
+- ResNet50
+- MixMAE
+- SimMIM
+
+The associated model definitions, configuration files, and experimental scripts are organized under the `models/` and `configs/` directories.
+
+These implementations are mainly used for comparative evaluation of fatigue recognition performance under consistent experimental settings.
+
+---
+
+## 🔥 Grad-CAM++ Visualization
+
+Grad-CAM++ can be used to analyze the spatial regions contributing to train driver fatigue classification.
+
+The required package can be installed with:
+
+```bash
+pip install grad-cam opencv-python
+```
+
+Generated attention maps can be used to examine whether the model focuses on meaningful facial regions associated with fatigue-related visual patterns.
+
+---
+
 ## 📈 Evaluation
 
-The downstream model can be evaluated using common classification metrics, including:
+The downstream models can be evaluated using common binary classification metrics:
 
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- Balanced Accuracy
-- ROC-AUC
+```text
+Accuracy
+Precision
+Recall
+F1-score
+Balanced Accuracy
+ROC-AUC
+```
 
-For cross-subject experiments, LOSO evaluation can be used to assess the generalization capability of the learned representations on unseen drivers.
+For cross-subject experiments, LOSO evaluation can be used to measure the generalization capability of the learned representations on unseen drivers.
 
-Grad-CAM++ visualization can also be applied to analyze the spatial regions contributing to fatigue classification decisions.
+The experimental scripts also support model efficiency analysis and visual interpretation where applicable.
 
 ---
 
@@ -366,6 +473,6 @@ For questions regarding the implementation, dataset, or academic collaboration, 
 
 ## 🙏 Acknowledgements
 
-This implementation builds upon research on Swin Transformer, masked image modeling, deformable attention, contrastive self-supervised learning, and visual representation learning.
+This repository builds upon research and open-source implementations related to Swin Transformer, masked image modeling, deformable attention, contrastive self-supervised learning, and visual representation learning.
 
-We thank the corresponding authors and open-source communities for their valuable contributions.
+We sincerely thank the corresponding authors and open-source communities for their valuable contributions.
