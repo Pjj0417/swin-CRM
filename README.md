@@ -1,6 +1,3 @@
-# Dynamic Swin-CRM
-
-## Dynamic Swin-CRM for Contrastive Self-Supervised Train Driver Fatigue Detection
 
 This repository provides code examples and reference implementations related to the paper:
 
