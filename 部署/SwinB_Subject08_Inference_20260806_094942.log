@@ -1,0 +1,97 @@
+############################################################################
+Inference run started: 2026-08-06 09:49:42
+Log file: /root/shared-nvme/swin/inference_logs/SwinB_Subject08_Inference_20260806_094942.log
+############################################################################
+============================================================================
+Swin-B FP32 Frame-Level Inference Benchmark
+============================================================================
+Run time: 2026-08-06 09:49:43
+Project root: /root/shared-nvme/swin
+GPU device: NVIDIA GeForce RTX 4090
+CUDA device ID: 0
+GPU memory: 15.92 GB
+PyTorch: 2.7.0+cu128
+CUDA: 12.8
+Precision: FP32
+Config: /root/shared-nvme/swin/configs/swin_base__800ep/simmim_finetune__swin_base__img224_window7__800ep.yaml
+Checkpoint: /root/shared-nvme/swin/training_outputs/swin_subject08/simmim_finetune/fatiguev2_subject08_reglight_100ep/best_ba_weights.pth
+Image: /root/shared-nvme/swin/test.jpg
+Input shape: (1, 3, 224, 224)
+Frames: 350
+Warm-up: 50
+Latency divisor: 3.5
+GPU monitoring: True
+GPU status interval: 10
+============================================================================
+
+Building model...
+=> merge config from /root/shared-nvme/swin/configs/swin_base__800ep/simmim_finetune__swin_base__img224_window7__800ep.yaml
+
+Loading checkpoint:
+/root/shared-nvme/swin/training_outputs/swin_subject08/simmim_finetune/fatiguev2_subject08_reglight_100ep/best_ba_weights.pth
+Using checkpoint key: model
+
+Checkpoint loading result:
+<All keys matched successfully>
+All model parameters loaded successfully.
+
+Model prepared in FP32.
+Input tensor: (1, 3, 224, 224)
+Input dtype: torch.float32
+
+Warming up for 50 iterations...
+First inference completed.
+Warm-up completed.
+
+Starting benchmark for 350 frames...
+Benchmark completed.
+
+============================================================================
+Prediction Result
+============================================================================
+Prediction: nofatigue
+Class ID: 1
+Confidence: 0.913599
+
+Class probabilities:
+  fatigue: 0.086401
+  nofatigue: 0.913599
+
+============================================================================
+Performance
+============================================================================
+Mean frame latency: 9.3057 ms
+Minimum latency: 9.1189 ms
+P50 latency: 9.2638 ms
+P90 latency: 9.4365 ms
+P95 latency: 9.5373 ms
+P99 latency: 10.1714 ms
+Maximum latency: 10.8218 ms
+Latency standard deviation: 0.1831 ms
+Latency coefficient of variation: 0.019678
+Theoretical FPS: 107.46 FPS
+Continuous GPU time: 3705.8867 ms
+Continuous throughput: 94.44 FPS
+Peak allocated GPU memory: 433.15 MB
+Peak reserved GPU memory: 468.00 MB
+Average GPU temperature: 31.60 C
+Maximum GPU temperature: 32.00 C
+Average GPU SM clock: 2886 MHz
+GPU SM clock range: 2752-2940 MHz
+Average GPU utilization: 16.89 %
+Maximum GPU utilization: 18.00 %
+Average GPU power: 118.84 W
+Maximum GPU power: 124.49 W
+DVFS event frames: 150
+Spike threshold: 0.517501 ms
+Spike frames: 8
+Burst frames: 0
+----------------------------------------------------------------------------
+CSV saved: /root/shared-nvme/swin/SwinB_Subject08_Frame_Latency.csv
+============================================================================
+
+Inference run completed successfully.
+
+Run finished: 2026-08-06 09:50:05
+Log saved: /root/shared-nvme/swin/inference_logs/SwinB_Subject08_Inference_20260806_094942.log
+############################################################################
