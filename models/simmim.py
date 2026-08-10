@@ -1,5 +1,3 @@
-
-
 # --------------------------------------------------------
 # SimMIM
 # Copyright (c) 2021 Microsoft
@@ -15,27 +13,7 @@ import torch.nn.functional as F
 from timm.models.layers import trunc_normal_
 
 from .swin_transformer import SwinTransformer
-from .swin_transformer_v2 import SwinTransformerV2
-
-
-def norm_targets(targets, patch_size):
-    assert patch_size % 2 == 1
-    
-    targets_ = targets
-    targets_count = torch.ones_like(targets)
-
-    targets_square = targets ** 2.
-    
-    targets_mean = F.avg_pool2d(targets, kernel_size=patch_size, stride=1, padding=patch_size // 2, count_include_pad=False)
-    targets_square_mean = F.avg_pool2d(targets_square, kernel_size=patch_size, stride=1, padding=patch_size // 2, count_include_pad=False)
-    targets_count = F.avg_pool2d(targets_count, kernel_size=patch_size, stride=1, padding=patch_size // 2, count_include_pad=True) * (patch_size ** 2)
-    
-    targets_var = (targets_square_mean - targets_mean ** 2.) * (targets_count / (targets_count - 1))
-    targets_var = torch.clamp(targets_var, min=0.)
-    
-    targets_ = (targets_ - targets_mean) / (targets_var + 1.e-6) ** 0.5
-    
-    return targets_
+from .vision_transformer import VisionTransformer
 
 
 class SwinTransformerForSimMIM(SwinTransformer):
@@ -76,14 +54,17 @@ class SwinTransformerForSimMIM(SwinTransformer):
         return super().no_weight_decay() | {'mask_token'}
 
 
-class SwinTransformerV2ForSimMIM(SwinTransformerV2):
+class VisionTransformerForSimMIM(VisionTransformer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         assert self.num_classes == 0
 
         self.mask_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
-        trunc_normal_(self.mask_token, mean=0., std=.02)
+        self._trunc_normal_(self.mask_token, std=.02)
+
+    def _trunc_normal_(self, tensor, mean=0., std=1.):
+        trunc_normal_(tensor, mean=mean, std=std, a=-std, b=std)
 
     def forward(self, x, mask):
         x = self.patch_embed(x)
@@ -91,33 +72,32 @@ class SwinTransformerV2ForSimMIM(SwinTransformerV2):
         assert mask is not None
         B, L, _ = x.shape
 
-        mask_tokens = self.mask_token.expand(B, L, -1)
-        w = mask.flatten(1).unsqueeze(-1).type_as(mask_tokens)
-        x = x * (1. - w) + mask_tokens * w
+        mask_token = self.mask_token.expand(B, L, -1)
+        w = mask.flatten(1).unsqueeze(-1).type_as(mask_token)
+        x = x * (1 - w) + mask_token * w
 
-        if self.ape:
-            x = x + self.absolute_pos_embed
+        cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        if self.pos_embed is not None:
+            x = x + self.pos_embed
         x = self.pos_drop(x)
 
-        for layer in self.layers:
-            x = layer(x)
+        rel_pos_bias = self.rel_pos_bias() if self.rel_pos_bias is not None else None
+        for blk in self.blocks:
+            x = blk(x, rel_pos_bias=rel_pos_bias)
         x = self.norm(x)
 
-        x = x.transpose(1, 2)
-        B, C, L = x.shape
+        x = x[:, 1:]
+        B, L, C = x.shape
         H = W = int(L ** 0.5)
-        x = x.reshape(B, C, H, W)
+        x = x.permute(0, 2, 1).reshape(B, C, H, W)
         return x
-
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return super().no_weight_decay() | {'mask_token'}
 
 
 class SimMIM(nn.Module):
-    def __init__(self, config, encoder, encoder_stride, in_chans, patch_size):
+    def __init__(self, encoder, encoder_stride):
         super().__init__()
-        self.config = config
         self.encoder = encoder
         self.encoder_stride = encoder_stride
 
@@ -128,19 +108,14 @@ class SimMIM(nn.Module):
             nn.PixelShuffle(self.encoder_stride),
         )
 
-        self.in_chans = in_chans
-        self.patch_size = patch_size
+        self.in_chans = self.encoder.in_chans
+        self.patch_size = self.encoder.patch_size
 
     def forward(self, x, mask):
         z = self.encoder(x, mask)
         x_rec = self.decoder(z)
 
         mask = mask.repeat_interleave(self.patch_size, 1).repeat_interleave(self.patch_size, 2).unsqueeze(1).contiguous()
-        
-        # norm target as prompted
-        if self.config.NORM_TARGET.ENABLE:
-            x = norm_targets(x, self.config.NORM_TARGET.PATCH_SIZE)
-        
         loss_recon = F.l1_loss(x, x_rec, reduction='none')
         loss = (loss_recon * mask).sum() / (mask.sum() + 1e-5) / self.in_chans
         return loss
@@ -179,31 +154,29 @@ def build_simmim(config):
             patch_norm=config.MODEL.SWIN.PATCH_NORM,
             use_checkpoint=config.TRAIN.USE_CHECKPOINT)
         encoder_stride = 32
-        in_chans = config.MODEL.SWIN.IN_CHANS
-        patch_size = config.MODEL.SWIN.PATCH_SIZE
-    elif model_type == 'swinv2':
-        encoder = SwinTransformerV2ForSimMIM(
+    elif model_type == 'vit':
+        encoder = VisionTransformerForSimMIM(
             img_size=config.DATA.IMG_SIZE,
-            patch_size=config.MODEL.SWINV2.PATCH_SIZE,
-            in_chans=config.MODEL.SWINV2.IN_CHANS,
+            patch_size=config.MODEL.VIT.PATCH_SIZE,
+            in_chans=config.MODEL.VIT.IN_CHANS,
             num_classes=0,
-            embed_dim=config.MODEL.SWINV2.EMBED_DIM,
-            depths=config.MODEL.SWINV2.DEPTHS,
-            num_heads=config.MODEL.SWINV2.NUM_HEADS,
-            window_size=config.MODEL.SWINV2.WINDOW_SIZE,
-            mlp_ratio=config.MODEL.SWINV2.MLP_RATIO,
-            qkv_bias=config.MODEL.SWINV2.QKV_BIAS,
+            embed_dim=config.MODEL.VIT.EMBED_DIM,
+            depth=config.MODEL.VIT.DEPTH,
+            num_heads=config.MODEL.VIT.NUM_HEADS,
+            mlp_ratio=config.MODEL.VIT.MLP_RATIO,
+            qkv_bias=config.MODEL.VIT.QKV_BIAS,
             drop_rate=config.MODEL.DROP_RATE,
             drop_path_rate=config.MODEL.DROP_PATH_RATE,
-            ape=config.MODEL.SWINV2.APE,
-            patch_norm=config.MODEL.SWINV2.PATCH_NORM,
-            use_checkpoint=config.TRAIN.USE_CHECKPOINT)
-        encoder_stride = 32
-        in_chans = config.MODEL.SWINV2.IN_CHANS
-        patch_size = config.MODEL.SWINV2.PATCH_SIZE
+            norm_layer=partial(nn.LayerNorm, eps=1e-6),
+            init_values=config.MODEL.VIT.INIT_VALUES,
+            use_abs_pos_emb=config.MODEL.VIT.USE_APE,
+            use_rel_pos_bias=config.MODEL.VIT.USE_RPB,
+            use_shared_rel_pos_bias=config.MODEL.VIT.USE_SHARED_RPB,
+            use_mean_pooling=config.MODEL.VIT.USE_MEAN_POOLING)
+        encoder_stride = 16
     else:
         raise NotImplementedError(f"Unknown pre-train model: {model_type}")
 
-    model = SimMIM(config=config.MODEL.SIMMIM, encoder=encoder, encoder_stride=encoder_stride, in_chans=in_chans, patch_size=patch_size)
+    model = SimMIM(encoder=encoder, encoder_stride=encoder_stride)
 
     return model
