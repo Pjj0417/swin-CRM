@@ -1,0 +1,56 @@
+# MODEL:
+#   TYPE: swin
+#   NAME: simmim_finetune
+#   DROP_PATH_RATE: 0.1
+#   SWIN:
+#     EMBED_DIM: 128
+#     DEPTHS: [ 2, 2, 18, 2 ]
+#     NUM_HEADS: [ 4, 8, 16, 32 ]
+#     WINDOW_SIZE: 7
+# DATA:
+#   IMG_SIZE: 224
+# TRAIN:
+#   EPOCHS: 100
+#   WARMUP_EPOCHS: 20
+#   BASE_LR: 1.25e-3
+#   WARMUP_LR: 2.5e-7
+#   MIN_LR: 2.5e-7
+#   WEIGHT_DECAY: 0.05
+#   LAYER_DECAY: 0.8
+# PRINT_FREQ: 100
+# SAVE_FREQ: 5
+# TAG: simmim_finetune__swin_base__img224_window7__800ep
+
+#已经很好了
+MODEL:
+  TYPE: swin
+  NAME: simmim_finetune
+  DROP_PATH_RATE: 0.1
+  SWIN:
+    EMBED_DIM: 128
+    DEPTHS: [2, 2, 18, 2]
+    NUM_HEADS: [4, 8, 16, 32]
+    WINDOW_SIZE: 7
+    DEFORMABLE: False         # ← 新增这一行
+DATA:
+  IMG_SIZE: 224
+
+AUG:
+  MIXUP: 0.0
+  CUTMIX: 0.0
+  REPROB: 0.0
+  AUTO_AUGMENT: none
+
+TRAIN:
+  EPOCHS: 30
+  WARMUP_EPOCHS: 1
+  BASE_LR: 5e-3
+  WARMUP_LR: 2.5e-7
+  MIN_LR: 1e-6
+  WEIGHT_DECAY: 0.05
+  LAYER_DECAY: 0.8
+  AUTO_RESUME: False
+
+PRINT_FREQ: 100
+SAVE_FREQ: 5
+TAG: nthuddd_binary_v2
