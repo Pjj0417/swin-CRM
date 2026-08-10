@@ -99,7 +99,7 @@ The image dataset used in the experiments is available on Figshare.
 </p>
 
 <p align="center">
-  <b>Figure 2. Example images from the train driver fatigue dataset.</b>
+  <b> Example images from the train driver fatigue dataset.</b>
 </p>
 
 Please refer to the Figshare record for the dataset files and associated access information.
