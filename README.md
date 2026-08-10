@@ -1,6 +1,4 @@
-# Dynamic Swin-CRM
 
-## Dynamic Swin-CRM for Contrastive Self-Supervised Train Driver Fatigue Detection
 
 This repository provides code examples and reference implementations related to the paper:
 
@@ -96,11 +94,11 @@ The image dataset used in the experiments is available on Figshare.
 [https://doi.org/10.6084/m9.figshare.33135473](https://doi.org/10.6084/m9.figshare.33135473)
 
 <p align="center">
-  <img src="2.png" width="800">
+  <img src="data sample.jpg" width="800">
 </p>
 
 <p align="center">
-  <b>Figure 2. Example images from the train driver fatigue dataset.</b>
+  <b> Example images from the train driver fatigue dataset.</b>
 </p>
 
 Please refer to the Figshare record for the dataset files and associated access information.
@@ -316,7 +314,7 @@ Dynamic-Swin-CRM/
 |-- main_simmim.py
 |-- main_simmim_pretrain_reconstruction.py
 |
-|-- swin_mae_dwmm_train_gradcam_speed_single_gpu_loso_fixed_recon_v5.py
+|-- swin_mae_dwmm_train_gradcam_speed_single_gpu_loso.py
 |-- run_swin_mae_dwmm_example.sh
 |-- requirements.txt
 `-- README.md
@@ -383,7 +381,7 @@ bash run_swin_mae_dwmm_example.sh
 In addition to the launcher script, the Swin-MAE + DWMM experiment can be started directly with Python and the corresponding configuration file.
 
 ```bash
-python swin_mae_dwmm_train_gradcam_speed_single_gpu_loso_fixed_recon_v5.py \
+python swin_mae_dwmm_train_gradcam_speed_single_gpu_loso.py \
   --stage full \
   --cfg ./configs/swin_mae_dwmm/swin_base_mae_dwmm_finetune_stable_img224.yaml \
   --data-path ./data/fatiguev2_105270 \
@@ -505,7 +503,6 @@ The following project-specific variants are trained locally and therefore do not
 ```text
 Swin-MAE + DWMM
 Swin-CMAE
-ResNet50 + MIM/CL
 other custom experimental variants
 ```
 
