@@ -4,7 +4,7 @@
 
 This repository provides code examples and reference implementations related to the paper:
 
-> **A Dynamic Swin-CRM-Based Contrastive Self-Supervised Framework for Train Driver Fatigue Detection**  
+> **A Dynamic Swin-CRM-Based Contrastive Self-Supervised Framework for Train Driver Fatigue Detection** 
 
 The current release provides representative implementations for train driver fatigue recognition, including an example based on **Swin-MAE with DWMM** for self-supervised visual representation learning.
 
@@ -154,13 +154,9 @@ conda activate fatigue
 python -m pip install --upgrade pip setuptools wheel
 ```
 
-### 2. Install Dependencies
+### 2. Install PyTorch
 
-```bash
-pip install -r requirements.txt
-```
-
-If PyTorch needs to be installed separately:
+For an NVIDIA GPU environment using CUDA 12.8:
 
 ```bash
 pip install \
@@ -169,6 +165,62 @@ torchvision==0.22.1 \
 torchaudio==2.7.1 \
 --index-url https://download.pytorch.org/whl/cu128
 ```
+
+### 3. Install Project Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+The main packages used by the training and deployment examples include:
+
+```text
+torch
+torchvision
+timm
+numpy
+scipy
+scikit-learn
+pandas
+Pillow
+opencv-python
+matplotlib
+grad-cam
+PyYAML
+yacs
+einops
+tensorboard
+safetensors
+gdown
+```
+
+### 4. Check the GPU Environment
+
+For GPU training and inference, an NVIDIA GPU with a compatible driver is recommended.
+
+Check that the driver and GPU are visible:
+
+```bash
+nvidia-smi
+```
+
+Then verify PyTorch CUDA support:
+
+```bash
+python - <<'PY'
+import torch
+
+print("PyTorch:", torch.__version__)
+print("CUDA runtime:", torch.version.cuda)
+print("CUDA available:", torch.cuda.is_available())
+
+if torch.cuda.is_available():
+    print("GPU:", torch.cuda.get_device_name(0))
+    print("cuDNN:", torch.backends.cudnn.version())
+PY
+```
+
+A working CUDA-enabled PyTorch installation is required for the GPU training and frame-level inference benchmark examples.
 
 ---
 
@@ -229,6 +281,9 @@ Dynamic-Swin-CRM/
 |-- swin_mae_dwmm_train_gradcam_speed_single_gpu_loso_fixed_recon_v5.py
 |-- run_swin_mae_dwmm_example.sh
 |-- download_pretrained_weights.sh
+|
+|-- inference benchmark scripts
+|
 |-- requirements.txt
 `-- README.md
 ```
@@ -239,7 +294,7 @@ The main example model described in this README is:
 models/swin_mae_dwmm_model.py
 ```
 
-and its configuration files are located under:
+Its corresponding configuration files are located under:
 
 ```text
 configs/swin_mae_dwmm/
@@ -276,22 +331,20 @@ chmod +x run_swin_mae_dwmm_example.sh
 bash run_swin_mae_dwmm_example.sh
 ```
 
-The launcher automatically looks for the newest available Swin-MAE + DWMM training driver in the project root.
-
 The default dataset path is:
 
 ```text
 ./data/fatiguev2_105270
 ```
 
-A different dataset path can be provided without editing the script:
+A different dataset path can be supplied without modifying the launcher:
 
 ```bash
 DATA_PATH=/path/to/dataset \
 bash run_swin_mae_dwmm_example.sh
 ```
 
-Common options can also be overridden from the command line environment:
+The batch size can also be adjusted according to available GPU memory:
 
 ```bash
 PRETRAIN_BATCH_SIZE=4 \
@@ -300,7 +353,7 @@ ACCUMULATION_STEPS=2 \
 bash run_swin_mae_dwmm_example.sh
 ```
 
-To disable Grad-CAM++ during the example run:
+Grad-CAM++ can be disabled during an example run when only training and evaluation are required:
 
 ```bash
 SKIP_GRADCAM=1 \
@@ -311,7 +364,7 @@ bash run_swin_mae_dwmm_example.sh
 
 ## ⬇️ Pretrained Weights
 
-A download script is provided for the comparison backbones:
+A helper script is provided for downloading the public pretrained weights used by the comparison backbones.
 
 ```bash
 chmod +x download_pretrained_weights.sh
@@ -323,40 +376,243 @@ Download the standard backbone weights:
 bash download_pretrained_weights.sh ./pretrained standard
 ```
 
-Download the standard weights together with the available SimMIM and MixMAE self-supervised checkpoints:
+Download the standard weights together with available self-supervised checkpoints:
 
 ```bash
 bash download_pretrained_weights.sh ./pretrained all
 ```
 
-### Direct Download Sources
+The downloaded weights are stored under:
 
-| Backbone | Pretrained weight |
+```text
+./pretrained/
+```
+
+Representative public checkpoints include:
+
+| Backbone / Method | Checkpoint |
 |---|---|
-| CoAtNet-0 | `https://huggingface.co/timm/coatnet_0_rw_224.sw_in1k/resolve/main/pytorch_model.bin` |
-| ConvNeXt-Base | `https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_224_ema.pth` |
-| DeiT-Base | `https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth` |
-| DeiT III Base | `https://huggingface.co/timm/deit3_base_patch16_224.fb_in22k_ft_in1k/resolve/main/model.safetensors` |
-| DINOv2 ViT-S/14 | `https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth` |
-| EdgeNeXt-Small | `https://huggingface.co/timm/edgenext_small.usi_in1k/resolve/main/pytorch_model.bin` |
-| MobileViTv2-1.0 | `https://huggingface.co/timm/mobilevitv2_100.cvnets_in1k/resolve/main/pytorch_model.bin` |
-| ResNet50 | `https://download.pytorch.org/models/resnet50-11ad3fa6.pth` |
-| Swin-Base | `https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224.pth` |
-| SwinV2-CR Small NS | `https://huggingface.co/timm/swinv2_cr_small_ns_224.sw_in1k/resolve/main/model.safetensors` |
+| CoAtNet-0 | timm ImageNet-1K |
+| ConvNeXt-Base | ImageNet-1K |
+| DeiT-Base | ImageNet-1K |
+| DeiT III Base | ImageNet-22K -> ImageNet-1K |
+| DINOv2 ViT-S/14 | DINOv2 pretrained |
+| EdgeNeXt-Small | ImageNet-1K |
+| MobileViTv2-1.0 | ImageNet-1K |
+| ResNet50 | ImageNet-1K V2 |
+| Swin-Base | ImageNet-1K |
+| SwinV2 | ImageNet-1K |
+| MixMAE | public self-supervised checkpoint |
+| SimMIM | public self-supervised checkpoints |
 
-Additional self-supervised checkpoints available from their corresponding public repositories include:
+The **Swin-MAE + DWMM** example can be pretrained locally and does not require a task-specific pretrained checkpoint.
 
-| Method | Checkpoint |
-|---|---|
-| MixMAE Swin-B/W14, 600 epochs | `https://drive.google.com/uc?id=1pZYmTv08xK_kOe2kk6ahuvgJVkHm-ZIa` |
-| SimMIM Swin-Base, 100 epochs | `https://drive.google.com/uc?id=1Wcbr66JL26FF30Kip9fZa_0lXrDAKP-d` |
-| SimMIM Swin-Base, 800 epochs | `https://drive.google.com/uc?id=15zENvGjHlM71uKQ3d2FbljWPubtrPtjl` |
-| SimMIM Swin-Large, 800 epochs | `https://drive.google.com/uc?id=1qDxrTl2YUDB0505_4QrU5LU2R1kKmcBP` |
-| SimMIM ViT-Base, 800 epochs | `https://drive.google.com/uc?id=1dJn6GYkwMIcoP3zqOEyW1_iQfpBi8UOw` |
+---
 
-The **Swin-MAE + DWMM** example does not require a downloadable task-specific checkpoint for self-supervised pretraining; its pretraining checkpoint is generated locally by the example training procedure.
+## 🖥️ Deployment and Inference Benchmark Example
 
-Project-specific variants such as Swin-CMAE or other custom self-supervised combinations can likewise be trained locally when no external checkpoint is supplied.
+A frame-level GPU inference benchmark can be used to evaluate deployment performance after model fine-tuning.
+
+The benchmark example performs:
+
+- FP32 single-image inference
+- CUDA warm-up
+- Repeated frame-level latency measurement
+- Mean / Min / P50 / P90 / P95 / P99 / Max latency statistics
+- FPS calculation
+- Peak GPU memory measurement
+- GPU temperature, SM clock, utilization, and power monitoring
+- Per-frame CSV export
+- Complete terminal log export
+
+The provided benchmark design uses **batch size 1**, a fixed **224 x 224** input, model warm-up, and CUDA Event timing for GPU latency measurement. fileciteturn8file0L6-L22
+
+### Deployment Requirements
+
+The deployment benchmark requires:
+
+```text
+Python >= 3.10
+PyTorch >= 2.x
+CUDA-compatible PyTorch
+torchvision
+numpy
+Pillow
+PyYAML
+yacs
+```
+
+The benchmark also expects the required project files, model configuration, and fine-tuned checkpoint to be available in the project directory. fileciteturn8file0L25-L53
+
+For GPU monitoring, the system should provide:
+
+```text
+NVIDIA GPU
+NVIDIA driver
+nvidia-smi
+```
+
+If `nvidia-smi` is unavailable, GPU temperature, clock, utilization, and power monitoring should be disabled.
+
+### Recommended Project Files
+
+A deployment benchmark typically requires:
+
+```text
+config.py
+models/
+configs/
+training_outputs/
+test.jpg
+```
+
+Before running the benchmark, update the configuration and checkpoint paths in the inference script to match the local project structure.
+
+For example:
+
+```python
+CFG_PATH = PROJECT_ROOT / "configs" / "..." / "model_config.yaml"
+CHECKPOINT_PATH = PROJECT_ROOT / "training_outputs" / "..." / "best_ba_weights.pth"
+IMAGE_PATH = PROJECT_ROOT / "test.jpg"
+```
+
+The supplied benchmark example loads a fine-tuned checkpoint, performs single-image FP32 inference, runs warm-up iterations, and then measures a continuous sequence of frames. fileciteturn8file0L151-L178
+
+### Run the Inference Benchmark
+
+Place a test image in the project root:
+
+```text
+test.jpg
+```
+
+Then run the corresponding benchmark script:
+
+```bash
+python <inference_benchmark_script>.py
+```
+
+The benchmark can generate:
+
+```text
+*_Frame_Latency.csv
+
+inference_logs/
+    *_Inference_YYYYMMDD_HHMMSS.log
+```
+
+The benchmark implementation saves both frame-level CSV results and complete terminal logs. fileciteturn8file0L81-L102
+
+---
+
+## ⚡ CUDA / PyTorch Acceleration
+
+For fixed input sizes, the deployment benchmark can enable several PyTorch CUDA optimizations:
+
+```python
+torch.backends.cudnn.benchmark = True
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.set_float32_matmul_precision("high")
+```
+
+These options are already supported by the benchmark implementation. fileciteturn8file0L55-L79
+
+### cuDNN Benchmark
+
+```python
+torch.backends.cudnn.benchmark = True
+```
+
+This is useful when the input shape is fixed because cuDNN can select an efficient kernel for repeated inference.
+
+For reproducible timing comparisons, keep the input size and batch size fixed across experiments.
+
+### TF32 Acceleration
+
+On supported NVIDIA GPUs, TF32 can accelerate selected float32 matrix and convolution operations using Tensor Cores.
+
+```python
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.set_float32_matmul_precision("high")
+```
+
+The model parameters and input tensors remain `torch.float32`, while selected internal operations may use TF32 hardware acceleration. fileciteturn8file0L59-L73
+
+If a benchmark requires **strict IEEE FP32 arithmetic**, disable TF32:
+
+```python
+torch.backends.cuda.matmul.allow_tf32 = False
+torch.backends.cudnn.allow_tf32 = False
+```
+
+This distinction should be reported when comparing inference latency across hardware or software environments. fileciteturn8file0L75-L79
+
+### Inference Mode
+
+Deployment inference should use:
+
+```python
+model.eval()
+
+with torch.inference_mode():
+    output = model(image)
+```
+
+This disables autograd bookkeeping and is appropriate for inference-only evaluation.
+
+---
+
+## ⏱️ Recommended Benchmark Protocol
+
+For reliable deployment performance measurements:
+
+1. Close other GPU-intensive applications.
+2. Keep the input resolution fixed.
+3. Keep the batch size fixed.
+4. Warm up the model before recording latency.
+5. Use CUDA Event timing for GPU execution latency.
+6. Run enough consecutive frames to observe stable behavior.
+7. Keep the same GPU driver, CUDA runtime, PyTorch version, and power state when comparing models.
+8. Record GPU temperature and SM clock when analyzing DVFS or thermal effects.
+
+These conditions are consistent with the benchmark recommendations included in the deployment script. fileciteturn8file0L104-L128
+
+For the example benchmark:
+
+```text
+Input size:       224 x 224
+Batch size:       1
+Warm-up:          50 iterations
+Measured frames:  350
+Timing method:    torch.cuda.Event
+```
+
+The benchmark uses raw CUDA Event milliseconds without artificial latency scaling. fileciteturn8file0L186-L201
+
+### GPU Monitoring and Pure Latency Testing
+
+GPU state monitoring is useful for studying:
+
+```text
+Temperature
+SM clock
+GPU utilization
+Power
+DVFS behavior
+Latency spikes
+```
+
+However, `nvidia-smi` queries introduce additional system activity.
+
+When the goal is the cleanest possible inference latency measurement, disable GPU monitoring in the benchmark script:
+
+```python
+ENABLE_GPU_MONITORING = False
+```
+
+This reduces interference from repeated external GPU-status queries. fileciteturn8file0L117-L128
 
 ---
 
@@ -420,6 +676,18 @@ Recall
 F1-score
 Balanced Accuracy
 ROC-AUC
+```
+
+For deployment-oriented experiments, additional metrics can include:
+
+```text
+Mean latency
+P50 / P90 / P95 / P99 latency
+Throughput / FPS
+Peak GPU memory
+GPU temperature
+GPU utilization
+GPU power
 ```
 
 For cross-subject experiments, LOSO evaluation can be used to assess generalization to unseen drivers.
