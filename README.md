@@ -95,7 +95,7 @@ The image dataset used in the experiments is available on Figshare.
 [https://doi.org/10.6084/m9.figshare.33135473](https://doi.org/10.6084/m9.figshare.33135473)
 
 <p align="center">
-  <img src="2.png" width="800">
+  <img src="data sample.jpg" width="800">
 </p>
 
 <p align="center">
