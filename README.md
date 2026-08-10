@@ -3,7 +3,6 @@
 This repository provides code examples and reference implementations related to the paper:
 
 > **A Dynamic Swin-CRM-Based Contrastive Self-Supervised Framework for Train Driver Fatigue Detection**  
-> *IEEE Internet of Things Journal (under review)*
 
 The current release provides representative implementations for train driver fatigue recognition. The runnable self-supervised example released in this repository is based on **Swin-MAE with DWMM**.
 
