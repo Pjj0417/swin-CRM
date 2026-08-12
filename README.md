@@ -85,24 +85,6 @@ Together with reconstruction learning and DWMM-based feature modeling, contrasti
 
 ---
 
-## 📁 Dataset
-
-The image dataset used in the experiments is available on Figshare.
-
-**DOI and access link:**  
-[https://doi.org/10.6084/m9.figshare.33135473](https://doi.org/10.6084/m9.figshare.33135473)
-
-<p align="center">
-  <img src="data sample.jpg" width="800">
-</p>
-
-<p align="center">
-  <b> Example images from the train driver fatigue dataset.</b>
-</p>
-
-Please refer to the Figshare record for the dataset files and associated access information.
-
----
 
 ## 📊 Experimental Setting
 
